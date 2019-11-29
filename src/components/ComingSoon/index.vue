@@ -1,5 +1,7 @@
 <template>
     <div class="movie_body">
+      <loading v-if="isLoading" />
+      <Scroller v-else>
         <ul>
             <!-- <li>
                 <div class="pic_show"><img src="/images/movie_1.jpg"></div>
@@ -26,6 +28,7 @@
                 </div>
             </li>
         </ul>
+      </Scroller>
     </div>
 </template>
 
@@ -35,15 +38,22 @@ export default {
 
   data () {
     return {
-      comingList: []
+      comingList: [],
+      isLoading: true,
+      preCityId: -1
     }
   },
 
-  mounted () {
-    this.axios.get('/api/movieComingList?cityId=10').then((res) => {
+  activated () {
+    var cityId = this.$store.state.city.id
+    if (this.preCityId === cityId) return // 第一次渲染或城市改变时发起请求
+    this.isLoading = true
+    this.axios.get(`/api/movieComingList?cityId=${cityId}`).then((res) => {
       var msg = res.data.msg
       if (msg === 'ok') {
         this.comingList = res.data.data.comingList
+        this.isLoading = false
+        this.preCityId = cityId
       }
     })
   }

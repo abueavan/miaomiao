@@ -1,5 +1,7 @@
 <template>
         <div class="cinema_body">
+          <loading v-if="isLoading" />
+          <Scroller v-else>
             <ul>
                 <!-- <li>
                     <div>
@@ -33,6 +35,7 @@
                     </div>
                 </li>
             </ul>
+          </Scroller>
         </div>
 </template>
 
@@ -42,16 +45,21 @@ export default {
 
   data () {
     return {
-      cinemaList: []
+      cinemaList: [],
+      isLoading: true
     }
   },
 
-  mounted () {
-    this.axios.get('/api/cinemaList?cityId=10').then((res) => {
+  activated () {
+    var cityId = this.$store.state.city.id
+    if (this.preCityId === cityId) return // 第一次渲染或城市改变时发起请求
+    this.isLoading = true
+    this.axios.get(`/api/cinemaList?cityId=${cityId}`).then((res) => {
       var msg = res.data.msg
       if (msg === 'ok') {
         this.cinemaList = res.data.data.cinemas
-        console.log('this.cinemaList', this.cinemaList)
+        this.isLoading = false
+        this.preCityId = cityId
       }
     })
   },
